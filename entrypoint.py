@@ -22,7 +22,7 @@ class DynDNS(object):
         raise Exception("No hosted zone found. {}".format(res))
 
     def resolve_ips(self):
-        self.my_ip = requests.get('http://ip.42.pl/raw').text
+        self.my_ip = requests.get('http://my-ip.clustermaestro.com').text
         records = self.r53.list_resource_record_sets(
             HostedZoneId=self.hosted_zone_id,
             StartRecordType='A',
@@ -40,8 +40,6 @@ class DynDNS(object):
                     print(self.my_ip)
                     return True
         raise Exception("Could not find records in route53")
-
-    # def _needs_refresh(self):
 
     def start(self):
         self.hosted_zone_id = self._get_hosted_zone_id()

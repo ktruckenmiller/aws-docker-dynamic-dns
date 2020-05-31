@@ -1,0 +1,15 @@
+---
+kind: pipeline
+name: update-container
+steps:
+  - name: build-docker
+    image: plugins/docker
+    settings:
+      repo: ktruckenmiller/aws-docker-dynamic-dns
+      username:
+        from_secret: username
+      password:
+        from_secret: password
+      tags:
+        - latest
+        - ${DRONE_COMMIT}
