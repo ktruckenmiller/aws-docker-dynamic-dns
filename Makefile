@@ -1,20 +1,19 @@
 
+ecr-login:
+	aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 601394826940.dkr.ecr.us-west-2.amazonaws.com
+
+build:
+	docker build -t 601394826940.dkr.ecr.us-west-2.amazonaws.com/dynamic-dns .
+
+push: ecr-login build
+	docker push 601394826940.dkr.ecr.us-west-2.amazonaws.com/dynamic-dns
+
 develop: build
 	docker run -it --rm \
 		-v ${PWD}:/app \
+		-v ${HOME}/.aws:/root/.aws:ro \
 		-w /app \
-		-e IAM_ROLE \
-		ktruckenmiller/aws-docker-dynamic-dns bash
-
-build:
-	docker build -t ktruckenmiller/aws-docker-dynamic-dns .
-
-build-test:
-	docker build -t ktruckenmiller/aws-docker-dynamic-dns:test .
-
-test:
-	docker run -it --rm \
-	-v ${PWD}:/app \
-	-w /app \
-	-e IAM_ROLE \
-	ktruckenmiller/aws-docker-dynamic-dns:test
+		--entrypoint /bin/sh \
+		-e HOSTED_ZONE=kloudcover.com \
+		-e DOMAIN_NAME=home.kloudcover.com \
+		601394826940.dkr.ecr.us-west-2.amazonaws.com/dynamic-dns
