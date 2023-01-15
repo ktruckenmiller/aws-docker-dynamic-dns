@@ -29,7 +29,6 @@ class DynDNS(object):
             StartRecordType="A",
             StartRecordName=self.domain_name,
         )["ResourceRecordSets"]
-        pprint(records)
         if not records:
             return True
         for record in records:

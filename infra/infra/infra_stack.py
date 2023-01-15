@@ -5,6 +5,7 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_logs as logs,
     aws_ecr as ecr,
+    aws_iam as iam,
 )
 from constructs import Construct
 
@@ -41,13 +42,28 @@ class InfraStack(Stack):
             "dyn-dns",
             image=ecs.ContainerImage.from_ecr_repository(
                 ecr.Repository.from_repository_name(
-                    self, "dyndns", repository_name="dynamic-dns"
+                    self, "dyndnsecr", repository_name="dynamic-dns"
                 )
             ),
+            environment={
+                "DOMAIN_NAME": "home.kloudcover.com",
+                "HOSTED_ZONE": "kloudcover.com",
+            },
             memory_reservation_mib=256,
             logging=ecs.LogDrivers.aws_logs(
                 log_retention=logs.RetentionDays.ONE_WEEK, stream_prefix="dyn-dns"
             ),
+        )
+        task_definition.add_to_task_role_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "route53:ChangeResourceRecordSets",
+                    "route53:ListResourceRecordSets",
+                    "route53:GetHostedZone",
+                    "route53:ListHostedZones",
+                ],
+                resources=["*"],
+            )
         )
         ecs.ExternalService(
             self,
